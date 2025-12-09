@@ -38,7 +38,7 @@ jobs:
 
   docker-build-push:
     runs-on: ubuntu-latest
-    needs: build-test   # ensures tests pass before building the image
+    needs: build-test
 
     steps:
       - name: Checkout code
@@ -59,3 +59,64 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/devsu-python-app:latest
+
+  deploy-to-k8s:
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Install kubectl
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      # Install KinD (Kubernetes in Docker)
+      - name: Install KinD
+        run: |
+          curl -Lo kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x kind
+          sudo mv kind /usr/local/bin/kind
+
+      # Create a Kubernetes cluster
+      - name: Create KinD Cluster
+        run: |
+          kind create cluster --name devsu-cluster
+
+      # Rebuild Docker image locally for KinD
+
+      - name: Build image locally for KinD
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/devsu-python-app:latest .
+
+      # Load Docker image into KinD cluster
+      - name: Load image into KinD
+        run: |
+          kind load docker-image ${{ secrets.DOCKER_USERNAME }}/devsu-python-app:latest --name devsu-cluster
+
+
+      # Apply manifests
+      - name: Deploy manifests
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/secret.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+
+      # Wait for pods to be Running (WOW effect)
+      - name: Verify Kubernetes Deployment
+        run: |
+          kubectl get pods -n devsu-app
+          kubectl wait --for=condition=available --timeout=60s deployment/devsu-python-deployment -n devsu-app
+          kubectl get svc -n devsu-app
+
+      # Optional WOW effect: show logs
+      - name: Show Pod Logs
+        run: |
+          kubectl logs -l app=devsu-python -n devsu-app --tail=100
