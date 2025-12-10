@@ -68,38 +68,38 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Install kubectl
+      # FIX: Install kubectl (URL actualizada)
       - name: Install kubectl
         run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          KUBECTL_VERSION=$(curl -s https://api.github.com/repos/kubernetes/kubernetes/releases/latest | grep tag_name | cut -d '"' -f 4)
+          echo "Installing kubectl version $KUBECTL_VERSION"
+          curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
           chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
+          sudo mv kubectl /usr/local/bin/kubectl
 
-      # Install KinD (Kubernetes in Docker)
+      # Install KinD
       - name: Install KinD
         run: |
           curl -Lo kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
           chmod +x kind
           sudo mv kind /usr/local/bin/kind
 
-      # Create a Kubernetes cluster
+      # Create cluster
       - name: Create KinD Cluster
         run: |
           kind create cluster --name devsu-cluster
 
-      # Rebuild Docker image locally for KinD
-
+      # Rebuild image locally
       - name: Build image locally for KinD
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/devsu-python-app:latest .
 
-      # Load Docker image into KinD cluster
+      # Load into KinD
       - name: Load image into KinD
         run: |
           kind load docker-image ${{ secrets.DOCKER_USERNAME }}/devsu-python-app:latest --name devsu-cluster
 
-
-      # Apply manifests
+      # Deploy manifests
       - name: Deploy manifests
         run: |
           kubectl apply -f k8s/namespace.yaml
@@ -109,14 +109,14 @@ jobs:
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/ingress.yaml
 
-      # Wait for pods to be Running (WOW effect)
+      # Verify deployment
       - name: Verify Kubernetes Deployment
         run: |
           kubectl get pods -n devsu-app
           kubectl wait --for=condition=available --timeout=60s deployment/devsu-python-deployment -n devsu-app
           kubectl get svc -n devsu-app
 
-      # Optional WOW effect: show logs
+      # Logs
       - name: Show Pod Logs
         run: |
           kubectl logs -l app=devsu-python -n devsu-app --tail=100

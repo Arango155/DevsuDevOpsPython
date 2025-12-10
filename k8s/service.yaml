@@ -4,9 +4,10 @@ metadata:
   name: devsu-python-service
   namespace: devsu-app
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: devsu-python
   ports:
-    - port: 8000
+    - port: 80
       targetPort: 8000
+      protocol: TCP
