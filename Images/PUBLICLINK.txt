@@ -1,0 +1,4 @@
+The public endpoint was available at:
+http://143.244.215.71/api/users/
+
+However, the Terraform-provisioned cluster has been intentionally destroyed to avoid cloud billing, so the URL is no longer active. The manifest files, pipeline, and IaC remain fully reproducible.

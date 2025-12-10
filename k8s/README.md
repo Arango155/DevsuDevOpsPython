@@ -1,29 +1,10 @@
 # DevOps Technical Challenge — Python Application
 
-This repository contains the implementation of the DevOps technical challenge for a Python (Django) application that exposes a simple API for creating and retrieving users. The solution includes containerization, CI/CD pipeline, Kubernetes deployment, and Infrastructure as Code using Terraform, following industry best practices with full automation and documentation.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Application Features](#application-features)
-- [Getting Started](#getting-started)
-- [Dockerization](#1-dockerization)
-- [CI/CD Pipeline](#2-cicd-pipeline-github-actions)
-- [Kubernetes Deployment](#3-kubernetes-deployment)
-- [Infrastructure as Code](#4-infrastructure-as-code-terraform)
-- [System Architecture](#5-system-architecture)
-- [Deliverables Checklist](#6-required-deliverables-checklist)
-- [Screenshots Required](#7-screenshots-required-for-submission)
-- [Notes and Considerations](#8-notes-and-considerations)
-- [License](#license)
-
----
+This repository contains the implementation of the DevOps technical challenge, including containerization, CI/CD pipeline, Kubernetes deployment, and Infrastructure as Code using Terraform. The solution was designed following industry best practices and includes full automation and documentation.
 
 ## Overview
 
-This repository extends the base Python application with:
+The application is a Python (Django) service that exposes a simple API for creating and retrieving users. This repository extends the base application with:
 
 - Docker containerization
 - Automated testing and coverage
@@ -32,134 +13,6 @@ This repository extends the base Python application with:
 - Infrastructure provisioning using Terraform (DigitalOcean Kubernetes)
 - ConfigMaps, Secrets, Ingress, Service, and Deployment resources
 - Load balancer exposure for public access
-
----
-
-## Application Features
-
-The application provides the following REST API endpoints:
-
-### Create User
-
-**Endpoint:** `/api/users/`  
-**Method:** `POST`
-
-**Request Body:**
-```json
-{
-    "dni": "dni",
-    "name": "name"
-}
-```
-
-**Success Response (200):**
-```json
-{
-    "id": 1,
-    "dni": "dni",
-    "name": "name"
-}
-```
-
-**Error Response (400):**
-```json
-{
-    "detail": "error"
-}
-```
-
-### Get All Users
-
-**Endpoint:** `/api/users/`  
-**Method:** `GET`
-
-**Success Response (200):**
-```json
-[
-    {
-        "id": 1,
-        "dni": "dni",
-        "name": "name"
-    }
-]
-```
-
-### Get User by ID
-
-**Endpoint:** `/api/users/<id>`  
-**Method:** `GET`
-
-**Success Response (200):**
-```json
-{
-    "id": 1,
-    "dni": "dni",
-    "name": "name"
-}
-```
-
-**Error Response (404):**
-```json
-{
-    "detail": "Not found."
-}
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.11.3
-- Docker (optional, for containerized deployment)
-- kubectl (for Kubernetes deployment)
-- Terraform (for infrastructure provisioning)
-
-### Local Installation (Without Docker)
-
-Clone this repository:
-```bash
-git clone https://bitbucket.org/devsu/demo-devops-python.git
-cd demo-devops-python
-```
-
-Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-Migrate database:
-```bash
-py manage.py makemigrations
-py manage.py migrate
-```
-
-### Database
-
-The database is generated as a file in the main path when the project is first run, and its name is `db.sqlite3`.
-
-Consider giving access permissions to the file for proper functioning.
-
-### Run Locally
-
-To run tests:
-```bash
-py manage.py test
-```
-
-To run the development server:
-```bash
-py manage.py runserver
-```
-
-Open http://localhost:8000/api/ with your browser to see the result.
-
-### Code Coverage
-```bash
-coverage run manage.py test
-coverage xml
-```
 
 ---
 
@@ -177,7 +30,7 @@ The project includes an optimized Dockerfile with:
 
 **Location:** `Dockerfile`
 
-### Build and Run with Docker
+### Build and Run Locally
 ```bash
 docker build -t devsu-app .
 docker run -p 8000:8000 devsu-app
@@ -271,7 +124,6 @@ node_size    = "s-1vcpu-2gb"
 
 **Initialize Terraform:**
 ```bash
-cd terraform/
 terraform init
 ```
 
@@ -293,7 +145,29 @@ export KUBECONFIG=devsu-cluster-kubeconfig.yaml
 
 ---
 
-## 5. System Architecture
+## 5. Application Usage
+
+### Run Locally Without Docker
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+### Run Tests
+```bash
+python manage.py test
+```
+
+### Code Coverage
+```bash
+coverage run manage.py test
+coverage xml
+```
+
+---
+
+## 6. System Architecture
 
 The system includes:
 
@@ -308,7 +182,7 @@ A diagram can be provided on request.
 
 ---
 
-## 6. Required Deliverables (Checklist)
+## 7. Required Deliverables (Checklist)
 
 | Requirement | Status |
 |------------|--------|
@@ -331,7 +205,7 @@ A diagram can be provided on request.
 
 ---
 
-## 7. Screenshots Required for Submission
+## 8. Screenshots Required for Submission
 
 Include the following in the ZIP file or repository documentation:
 
@@ -340,38 +214,24 @@ Include the following in the ZIP file or repository documentation:
 - [ ] Terraform apply output (cluster created)
 - [ ] `kubectl get nodes` showing cloud worker nodes
 - [ ] `kubectl get pods -n devsu-app` showing running replicas
+- [ ] `kubectl get svc -n devsu-app` showing LoadBalancer external IP
 - [ ] Public URL returning `/api/users/`
-
-![](Images\GITHUBACTIONS.png)
-
-![](Images\devsudo.png)
-
-![](Images\TERRAFORMAPPLY.png)
-
-![](Images\CLUSTERCONECTION.png)
-
-![](Images\loadbalancerDO.png)
-
-![public](Images\WORKINGINPUBLIC.png)
 
 ---
 
-## 8. Notes and Considerations
+## 9. Notes and Considerations
 
 - Secrets are never pushed to the repository
 - Terraform state is excluded via `.gitignore`
 - CI pipeline includes KinD to simulate deployment
 - The project follows production-level DevOps practices
 
-
-
 ---
 
 ## License
 
-Copyright © 2023 Devsu. All rights reserved.
-
 This project is part of a technical challenge and is provided as-is for evaluation purposes.
 
----
+## Contact
 
+For questions or clarifications, please open an issue in this repository.
